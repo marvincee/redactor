@@ -1,1 +1,1 @@
-# Test suite for Local Redactor CLI
+# Test suite for Redactor

@@ -3,7 +3,7 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "local-redactor"
+name = "redactor"
 version = "0.1.0"
 description = "A fast, fully local text redaction CLI."
 readme = "README.md"

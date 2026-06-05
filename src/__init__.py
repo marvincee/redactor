@@ -1,1 +1,1 @@
-# Local Redactor package
+# Redactor package

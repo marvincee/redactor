@@ -1,1 +1,1 @@
-# NLP package for Local Redactor CLI
+# NLP package for Redactor

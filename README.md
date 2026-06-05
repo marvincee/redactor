@@ -1,4 +1,4 @@
-# Local Redactor CLI
+# Redactor
 
 A fast, fully local CLI tool designed to sanitize text for LLM inputs by removing PII such as names, emails, phone numbers, and URLs.
 Optimized for English, German, and Korean text.
