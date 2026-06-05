@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "local-redactor"
+version = "0.1.0"
+description = "A fast, fully local text redaction CLI."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+  "click>=8.4,<9",
+  "spacy>=3.8,<4",
+  "kiwipiepy>=0.23,<1",
+]
+
+authors = [
+  { name = "marvin" },
+]
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Security",
+  "Topic :: Text Processing",
+  "Operating System :: MacOS",
+]
+
+[project.scripts]
+redact = "src.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
