@@ -118,5 +118,46 @@ class TestRedactionPipeline(unittest.TestCase):
             load_ko.assert_called_once_with()
             load_en.assert_not_called()
 
+    def test_mixed_korean_english_redaction_flow(self):
+        text = "홍길동 met Alice at Google."
+
+        korean_extractor = Mock()
+        korean_extractor.extract_entities.return_value = [
+            {"text": "홍길동", "start": 0, "end": 3, "type": "PERSON"},
+        ]
+        english_extractor = Mock()
+        english_extractor.extract_entities.return_value = [
+            {"text": "Alice", "start": 8, "end": 13, "type": "PERSON"},
+            {"text": "Google", "start": 17, "end": 23, "type": "ORG"},
+        ]
+
+        with patch.object(
+            RedactionPipeline,
+            "_load_english_german_extractor",
+            return_value=english_extractor,
+        ) as load_en, patch.object(
+            RedactionPipeline,
+            "_load_korean_extractor",
+            return_value=korean_extractor,
+        ) as load_ko:
+            redacted = self.pipeline.redact(text)
+
+        load_ko.assert_called_once_with()
+        load_en.assert_called_once_with()
+        korean_extractor.extract_entities.assert_called_once()
+        english_extractor.extract_entities.assert_called_once()
+
+        self.assertNotIn("홍길동", redacted)
+        self.assertNotIn("Alice", redacted)
+        self.assertNotIn("Google", redacted)
+        self.assertIn("<NAME_1>", redacted)
+        self.assertIn("<NAME_2>", redacted)
+        self.assertIn("<ORG_1>", redacted)
+
+        self.assertEqual(
+            redacted.replace("<NAME_1>", "NAME").replace("<NAME_2>", "NAME").replace("<ORG_1>", "ORG"),
+            "NAME met NAME at ORG.",
+        )
+
 if __name__ == "__main__":
     unittest.main()

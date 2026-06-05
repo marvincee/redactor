@@ -51,6 +51,19 @@ class RedactionPipeline:
             return 'de'
         return 'en'
 
+    def _detect_latin_language(self, text: str) -> str:
+        """Heuristically detects the best Latin-script language for mixed text."""
+        de_words = {"der", "die", "das", "und", "ist", "in", "zu", "den", "von", "mit", "eine", "dass", "es"}
+        en_words = {"the", "and", "of", "to", "in", "is", "you", "that", "it", "he", "was", "for", "on", "are", "as"}
+
+        words = re.findall(r'\b[a-zA-Z]+\b', text.lower())
+        de_count = sum(1 for w in words if w in de_words)
+        en_count = sum(1 for w in words if w in en_words)
+
+        if de_count > en_count:
+            return 'de'
+        return 'en'
+
     def redact(self, text: str, lang: Optional[str] = None) -> str:
         """Runs the sequential 3-pass redaction process on the input text."""
         if not text.strip():
@@ -67,13 +80,29 @@ class RedactionPipeline:
 
         # --- Pass 2: NLP NER Extraction ---
         # Extract PERSON and ORG entities from the partially redacted text
+        entities = []
         if lang == 'ko':
-            entities = self._load_korean_extractor().extract_entities(partially_redacted_text)
+            entities.extend(self._load_korean_extractor().extract_entities(partially_redacted_text))
+            if re.search(r'[A-Za-z]', partially_redacted_text):
+                latin_lang = self._detect_latin_language(partially_redacted_text)
+                entities.extend(
+                    self._load_english_german_extractor().extract_entities(
+                        partially_redacted_text,
+                        latin_lang,
+                    )
+                )
         else:
-            entities = self._load_english_german_extractor().extract_entities(partially_redacted_text, lang)
+            entities.extend(self._load_english_german_extractor().extract_entities(partially_redacted_text, lang))
+            if re.search(r'[\uac00-\ud7a3]', partially_redacted_text):
+                entities.extend(self._load_korean_extractor().extract_entities(partially_redacted_text))
 
         # Register extracted entities in the vault to generate tokens and handle name substrings
+        seen_entities = set()
         for ent in entities:
+            entity_key = (ent["text"], ent["start"], ent["end"], ent["type"])
+            if entity_key in seen_entities:
+                continue
+            seen_entities.add(entity_key)
             self.vault.get_or_create_token(ent["text"], ent["type"])
 
         # --- Pass 3: Substitution ---

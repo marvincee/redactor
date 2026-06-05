@@ -7,6 +7,7 @@ Optimized for English, German, and Korean text.
 * **Native clipboard integration:** Uses macOS `pbpaste` and `pbcopy` directly.
 * **Consistent state:** If "Max Mustermann" is replaced with `<NAME_1>`, later mentions of "Max" also become `<NAME_1>`.
 * **Multilingual pipeline:** Uses regex for structured data and lightweight NLP for human names.
+* **Mixed-language support:** Korean + English/German text is handled by running both relevant extractors when both scripts appear.
 
 ## Install
 If `pip` is not available on your Mac, install Python first:
